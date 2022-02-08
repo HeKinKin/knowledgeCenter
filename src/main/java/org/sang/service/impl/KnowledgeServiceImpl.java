@@ -79,17 +79,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 .foreignField("_id")
                 //查询出的从表集合 命名
                 .as("cate_ids");
-        LookupOperation lookupOperation = LookupOperation.newLookup()
-                //从表（关联的表）
-                .from("kbs_tag")
-                //主表中与从表相关联的字段
-                .localField("tag_ids")
-                //从表与主表相关联的字段
-                .foreignField("_id")
-                //查询出的从表集合 命名
-                .as("tag_ids");
         Pattern pattern = Pattern.compile("^.*" + content + ".*$", Pattern.CASE_INSENSITIVE);
-        Criteria criteria = null;
+        Criteria criteria;
         if (state == -2) {
             criteria = Criteria.where("state").is(1);
         }else if (state == -1) {
@@ -100,13 +91,10 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         criteria.orOperator(Criteria.where("title").is(pattern));
 
         Aggregation agg = Aggregation.newAggregation(
-                match(criteria),
-                lookup,
-                lookupOperation,
-                Aggregation.skip(page-1),limit(size),
                 Aggregation.facet(count().as("count")).as("total")
-                        .and(Aggregation.project("title","author","update_time","cate_ids","tag_ids").andExpression("toString(_id)").as("id")
-                                .and("tag_ids.tag_name").as("tag_name")).as("data")
+                            .and(match(criteria),skip((page-1)*size),limit(size),lookup,lookup("kbs_tag","tag_ids","_id","tag_ids")
+                                    ,project("title","author","update_time","cate_ids","tag_ids").andExpression("toString(_id)").as("id")
+                                    .and("tag_ids.tag_name").as("tag_name")).as("data")
                 );
         AggregationResults<HashMap> user = mongoTemplate.aggregate(agg, "knowledgeDoc", HashMap.class);
         return user.getMappedResults();
@@ -122,7 +110,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                         .and("cate_ids.category_name").as("categoryNames")
         );
         AggregationResults<HashMap> results = mongoTemplate.aggregate(agg,"knowledgeDoc",HashMap.class);
-        // todo 浏览量＋1
+        // 浏览量＋1
         if (CollectionUtils.isNotEmpty(results.getMappedResults())) {
             HashMap hashMap = results.getMappedResults().get(0);
             int view = Integer.valueOf(hashMap.get("pageView").toString());
@@ -136,23 +124,13 @@ public class KnowledgeServiceImpl implements KnowledgeService {
 
     @Override
     public List<HashMap> getKnowledgeForMobile(Long page, Long size) {
-        Long start = 0L;
-        Long end = 0L;
-        if (page == 1L) {
-            end = size;
-        }else {
-            start = page*size -size;
-            end = size;
-        }
-
         Aggregation agg = Aggregation.newAggregation(
-                Aggregation.skip(start),limit(end),
+                Aggregation.skip((page-1)*size),limit(size),
                 Aggregation.project("title").and("update_time").as("datetime").and("author").as("source").and("page_views").as("comment_count")
                 );
         AggregationResults<HashMap> results = mongoTemplate.aggregate(agg,"knowledgeDoc",HashMap.class);
         return results.getMappedResults();
     }
-
 
     /**
      * 处理标签
