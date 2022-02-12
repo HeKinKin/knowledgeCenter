@@ -94,41 +94,7 @@ public class KnowledgeController {
         return knowledgeService.getKnowledgeDetails(aid);
     }
 
-    @RequestMapping(value = "/mobile", method = RequestMethod.POST)
-    @CrossOrigin
-    public List<HashMap> getArticleForMobile(@RequestBody HashMap map) {
-        List<HashMap> re = knowledgeService.getKnowledgeForMobile(Long.valueOf(map.get("page").toString()),Long.valueOf(map.get("count").toString()));
-        re.stream().forEach(e ->{
-            e.put("article_type","2");
-            List<HashMap> list = new ArrayList<>();
-
-            HashMap map1 = new HashMap();
-            map1.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b2e201d0-517d-11eb-8a36-ebb87efcf8c0.jpg");
-            map1.put("width",563);
-            map1.put("height",316);
-
-            HashMap map2 = new HashMap();
-            map2.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b4cd3000-517d-11eb-a16f-5b3e54966275.jpg");
-            map2.put("width",641);
-            map2.put("height",360);
-
-            HashMap map3 = new HashMap();
-            map3.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b7c7f970-517d-11eb-97b7-0dc4655d6e68.jpg");
-            map3.put("width",640);
-            map3.put("height",360);
-            list.add(map1);
-            list.add(map2);
-            list.add(map3);
-
-
-            e.put("image_list",list);
-            e.put("id",e.get("_id").toString());
-            e.remove("_id");
-        });
-        return re;
-    }
-
-    @RequestMapping(value = "/mobile1", method = RequestMethod.GET)
+    @RequestMapping(value = "/mobile", method = RequestMethod.GET)
     @CrossOrigin
     public List<HashMap> getArticleForMobile1(@RequestParam Integer page, @RequestParam Integer count) {
         List<HashMap> re = knowledgeService.getKnowledgeForMobile(Long.valueOf(page.toString()),Long.valueOf(count.toString()));

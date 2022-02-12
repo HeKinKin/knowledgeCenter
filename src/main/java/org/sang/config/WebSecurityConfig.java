@@ -1,6 +1,8 @@
 package org.sang.config;
 
+import com.alibaba.fastjson.JSONObject;
 import org.sang.service.UserService;
+import org.sang.utils.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by sang on 2017/12/17.
@@ -45,7 +49,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
                 httpServletResponse.setContentType("application/json;charset=utf-8");
                 PrintWriter out = httpServletResponse.getWriter();
-                out.write("{\"status\":\"success\",\"msg\":\"登录成功\"}");
+                JSONObject re = new JSONObject();
+                re.put("status","success");
+                re.put("msg","登录成功");
+                re.put("userId",Util.getCurrentUser().getId());
+                re.put("nickName",Util.getCurrentUser().getNickname());
+                re.put("userName",Util.getCurrentUser().getUsername());
+                out.write(re.toString());
                 out.flush();
                 out.close();
             }
@@ -63,13 +73,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .usernameParameter("username").passwordParameter("password").permitAll()
                 .and().logout().permitAll().and().csrf().disable().exceptionHandling().accessDeniedHandler(getAccessDeniedHandler());
 //        http.authorizeRequests().anyRequest().permitAll().and().logout().permitAll();
+        http.formLogin().and().cors();
     }
 
 
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/blogimg/**","/index.html","/static/**","/knowledge/mobile","/login_page","/knowledge/mobile1","/knowledge/all");
+//        web.ignoring().antMatchers("/blogimg/**","/index.html","/static/**","/knowledge/mobile","/login_page","/knowledge/mobile1");
+        web.ignoring().antMatchers("/blogimg/**","/index.html","/static/**","/knowledge/mobile");
     }
 
     @Bean
