@@ -99,13 +99,17 @@ public class KnowledgeController {
     public List<HashMap> getArticleForMobile1(@RequestParam Integer page, @RequestParam Integer count) {
         List<HashMap> re = knowledgeService.getKnowledgeForMobile(Long.valueOf(page.toString()),Long.valueOf(count.toString()));
         re.stream().forEach(e ->{
-            e.put("article_type","2");
+            e.put("article_type",2);
+            e.put("datetime","两天前");
+            e.put("image_url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b4cd3000-517d-11eb-a16f-5b3e54966275.jpg");
+
+
             List<HashMap> list = new ArrayList<>();
 
             HashMap map1 = new HashMap();
-            map1.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b2e201d0-517d-11eb-8a36-ebb87efcf8c0.jpg");
-            map1.put("width",563);
-            map1.put("height",316);
+            map1.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b4cd3000-517d-11eb-a16f-5b3e54966275.jpg");
+//            map1.put("width",563);
+//            map1.put("height",316);
 
             HashMap map2 = new HashMap();
             map2.put("url","https://vkceyugu.cdn.bspapp.com/VKCEYUGU-dc-site/b4cd3000-517d-11eb-a16f-5b3e54966275.jpg");
@@ -117,11 +121,11 @@ public class KnowledgeController {
             map3.put("width",640);
             map3.put("height",360);
             list.add(map1);
-            list.add(map2);
-            list.add(map3);
+//            list.add(map2);
+//            list.add(map3);
 
 
-            e.put("image_list",list);
+//            e.put("image_list",list);
             e.put("id",e.get("_id").toString());
             e.remove("_id");
         });
