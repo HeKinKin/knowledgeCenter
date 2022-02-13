@@ -89,7 +89,7 @@ public class KnowledgeController {
      * @param aid
      * @return
      */
-    @RequestMapping(value = "/{aid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/detail/{aid}", method = RequestMethod.GET)
     public HashMap getArticleById(@PathVariable String aid) {
         return knowledgeService.getKnowledgeDetails(aid);
     }

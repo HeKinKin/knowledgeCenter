@@ -106,7 +106,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 match(Criteria.where("_id").is(new ObjectId(_id))),
                 Aggregation.lookup("kbs_category","category_ids","_id","cate_ids"),
                 Aggregation.lookup("kbs_tag","tag_ids","_id","tag_ids"),
-                Aggregation.project("title","author","tag_ids").and("update_time").as("updateTime").and("html_content").as("htmlContent").and("page_views").as("pageView")
+                Aggregation.project("title","author","tag_ids").and("update_time").as("updateTime").and("md_content").as("mdContent")
+                        .and("html_content").as("htmlContent").and("page_views").as("pageView")
                         .and("cate_ids.category_name").as("categoryNames")
         );
         AggregationResults<HashMap> results = mongoTemplate.aggregate(agg,"knowledgeDoc",HashMap.class);
