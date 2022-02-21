@@ -34,6 +34,13 @@ public class UserService implements UserDetailsService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    /**
+     * 首先根据用户名查出对应用户，再拿得到的用户的用户id去查询它所拥有的的权限列表，
+     * 最后构造出我们需要的org.springframework.security.core.userdetails.User对象。
+     * @param s
+     * @return
+     * @throws UsernameNotFoundException
+     */
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userMapper.loadUserByUsername(s);

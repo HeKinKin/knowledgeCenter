@@ -5,6 +5,8 @@ import org.sang.bean.Article;
 import org.sang.bean.RespBean;
 import org.sang.bean.model.KnowledgeModel;
 import org.sang.mongodb.document.KnowledgeDoc;
+import org.sang.response.JsonResult;
+import org.sang.response.ResultTool;
 import org.sang.service.KnowledgeService;
 import org.sang.utils.CollectionUtils;
 import org.sang.utils.TransferUtil;
@@ -25,17 +27,6 @@ public class KnowledgeController {
     @Autowired
     KnowledgeService knowledgeService;
 
-//    @RequestMapping(value = "/", method = RequestMethod.POST)
-//    public RespBean addNewArticle(KnowledgeModel knowledgeModel) {
-//        // model转entity
-//        KnowledgeDoc knowledgeDoc = TransferUtil.convertDocument(knowledgeModel,KnowledgeDoc.class);
-//        String result = knowledgeService.addKnowledge(knowledgeDoc);
-//        if (!StringUtils.isEmpty(result)) {
-//            return new RespBean("success", result + "");
-//        } else {
-//            return new RespBean("error", knowledgeDoc.getState() == 0 ? "文章保存失败!" : "文章发表失败!");
-//        }
-//    }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public RespBean addNewArticle(@RequestBody String param) throws IOException {
@@ -68,20 +59,20 @@ public class KnowledgeController {
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public Map<String, Object> getArticleByState(@RequestParam(value = "state", defaultValue = "-1") Integer state, @RequestParam(value = "page", defaultValue = "1") Integer page, @RequestParam(value = "count", defaultValue = "6") Integer count,String keywords) {
+    public JsonResult getArticleByState(@RequestParam(value = "state", defaultValue = "-1") Integer state, @RequestParam(value = "page", defaultValue = "1") Integer page, @RequestParam(value = "count", defaultValue = "6") Integer count,String keywords) {
         List<HashMap> re = knowledgeService.getKnowledge(Long.valueOf(page.toString()),Long.valueOf(count.toString()),state,keywords);
         if (CollectionUtils.isEmpty((List) re.get(0).get("data"))) {
             Map<String, Object> map = new HashMap<>();
             map.put("articles", Collections.emptyList());
             map.put("totalCount",0);
-            return map;
+            return ResultTool.success(map);
         }
         Map<String, Object> map = new HashMap<>();
         map.put("articles",re.get(0).get("data"));
         List totals = (List) re.get(0).get("total");
         HashMap countMessage = (HashMap) totals.get(0);
         map.put("totalCount",countMessage.get("count"));
-        return map;
+        return ResultTool.success(map);
     }
 
     /**
@@ -90,8 +81,8 @@ public class KnowledgeController {
      * @return
      */
     @RequestMapping(value = "/detail/{aid}", method = RequestMethod.GET)
-    public HashMap getArticleById(@PathVariable String aid) {
-        return knowledgeService.getKnowledgeDetails(aid);
+    public JsonResult getArticleById(@PathVariable String aid) {
+        return ResultTool.success(knowledgeService.getKnowledgeDetails(aid));
     }
 
     @RequestMapping(value = "/mobile", method = RequestMethod.GET)
