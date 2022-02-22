@@ -1,6 +1,7 @@
 package org.sang.mongodb.dao;
 
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -128,6 +129,16 @@ public abstract class MongoDbDao<T> {
     }
 
     /**
+     * 批量删除
+     * @param ids
+     */
+    public void batchDeleteById(List<String> ids,String collection){
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").in(ids));
+        this.mongoTemplate.remove(query,collection);
+    }
+
+    /**
      * 修改匹配到的第一条记录
      * @param srcOBj
      * @param targetObj
@@ -199,7 +210,7 @@ public abstract class MongoDbDao<T> {
      * @return
      * @author Jason
      */
-    private Update getUpdateByObject(T object) {
+    public Update getUpdateByObject(T object) {
         Update update = new Update();
         String[] fileds = getFiledName(object);
         for (int i = 0; i < fileds.length; i++) {

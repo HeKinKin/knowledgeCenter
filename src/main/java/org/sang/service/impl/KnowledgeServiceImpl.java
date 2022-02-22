@@ -2,6 +2,7 @@ package org.sang.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.sang.bean.model.KnowledgeModel;
 import org.sang.mongodb.dao.KnowledgeMongoDao;
@@ -65,7 +66,19 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             KnowledgeDoc doc = mongoTemplate.save(knowledgeDoc);
             return doc;
         }
-        return null;
+        // 处理修改操作
+        // 更新数据
+        Query query = new Query(Criteria.where("_id").is(knowledgeDoc.getObjectId()));
+//        Update update = knowledgeMongoDao.getUpdateByObject(knowledgeDoc);
+//        Update update = new Update().set("state",2);
+        Update update = new Update().set("category_ids",knowledgeDoc.getCategoryIds())
+                .set("title",knowledgeDoc.getTitle())
+                .set("tag_ids",knowledgeDoc.getTagIds())
+                .set("update_time",new Timestamp(System.currentTimeMillis()))
+                .set("md_content",knowledgeDoc.getMdContent())
+                .set("html_content",knowledgeDoc.getHtmlContent());
+        UpdateResult updateResult = mongoTemplate.updateMulti(query,update,"knowledgeDoc");
+        return knowledgeDoc;
     }
 
     @Override
@@ -93,7 +106,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         Aggregation agg = Aggregation.newAggregation(
                 Aggregation.facet(count().as("count")).as("total")
                             .and(match(criteria),skip((page-1)*size),limit(size),lookup,lookup("kbs_tag","tag_ids","_id","tag_ids")
-                                    ,project("title","author","update_time","cate_ids","tag_ids").andExpression("toString(_id)").as("id")
+                                    ,project("title","author","update_time","cate_ids","tag_ids","state").andExpression("toString(_id)").as("id")
                                     .and("tag_ids.tag_name").as("tag_name")).as("data")
                 );
         AggregationResults<HashMap> user = mongoTemplate.aggregate(agg, "knowledgeDoc", HashMap.class);
@@ -106,9 +119,12 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 match(Criteria.where("_id").is(new ObjectId(_id))),
                 Aggregation.lookup("kbs_category","category_ids","_id","cate_ids"),
                 Aggregation.lookup("kbs_tag","tag_ids","_id","tag_ids"),
-                Aggregation.project("title","author","tag_ids").and("update_time").as("updateTime").and("md_content").as("mdContent")
+                Aggregation.project("title","author","tag_ids","cate_ids").and("update_time").as("updateTime").and("md_content").as("mdContent")
                         .and("html_content").as("htmlContent").and("page_views").as("pageView")
                         .and("cate_ids.category_name").as("categoryNames")
+                        .and("cate_ids._id").as("categoryIds")
+                        .and("tag_ids._id").as("tagIds")
+                        .andExpression("toString(_id)").as("id")
         );
         AggregationResults<HashMap> results = mongoTemplate.aggregate(agg,"knowledgeDoc",HashMap.class);
         // 浏览量＋1
@@ -131,6 +147,28 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 );
         AggregationResults<HashMap> results = mongoTemplate.aggregate(agg,"knowledgeDoc",HashMap.class);
         return results.getMappedResults();
+    }
+
+    @Override
+    public boolean updateKnowledgeState(List<String> kids, int state) {
+        if (state == 2) {
+            // 批量删除
+            knowledgeMongoDao.batchDeleteById(kids,"knowledgeDoc");
+            return true;
+        }
+        //还原
+        Query query = new Query(Criteria.where("_id").in(kids));
+        Update update = new Update().set("state",2);
+        UpdateResult updateResult = mongoTemplate.updateMulti(query,update,"knowledgeDoc");
+        return true;
+    }
+
+    @Override
+    public boolean restoreKnowledge(String kid) {
+        Query query = new Query(Criteria.where("_id").is(kid));
+        Update update = new Update().set("state",1);
+        mongoTemplate.updateMulti(query,update,"knowledgeDoc");
+        return true;
     }
 
     /**

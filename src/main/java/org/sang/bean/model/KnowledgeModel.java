@@ -17,7 +17,7 @@ import java.util.List;
 public class KnowledgeModel implements InputConverter<KnowledgeDoc> {
 
     @JsonProperty("_id")
-    private String objectId;
+    private ObjectId objectId;
 
     /**
      * 标题

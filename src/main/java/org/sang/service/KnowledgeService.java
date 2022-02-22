@@ -39,4 +39,19 @@ public interface KnowledgeService {
      */
     List<HashMap> getKnowledgeForMobile(Long page,Long size);
 
+    /**
+     * 删除or放入回收站
+     * @param kids
+     * @param state
+     * @return
+     */
+    boolean updateKnowledgeState(List<String> kids,int state);
+
+    /**
+     * 还原知识
+     * @param kid 知识主键
+     * @return
+     */
+    boolean restoreKnowledge(String kid);
+
 }
